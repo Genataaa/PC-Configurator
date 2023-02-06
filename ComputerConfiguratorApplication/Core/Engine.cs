@@ -7,6 +7,7 @@
     using ComputerConfiguratorApplication.IO;
     using ComputerConfiguratorApplication.Data.Models;
     using ComputerConfiguratorApplication.Models;
+    using System.Linq;
 
     public class Engine : IEngine
     {
@@ -125,28 +126,44 @@
             }
             else
             {
-                writer.WriteLine($"Total: {configuration.TotalPrice}");
+                FindAllPossibleConfigurations();
+
+                writer.WriteLine($"There are {possibleConfigurations.Count} possible combinations:");
+                writer.WriteLine("");
+
+                for (int i = 1; i <= possibleConfigurations.Count; i++)
+                {
+                    writer.WriteLine($"{i}");
+                    writer.WriteLine(configuration.ToString());
+                }
             }
         }
 
-        //todo
-        private bool GetAllPossibleConfigurations(Configuration configuration)
+        private void FindAllPossibleConfigurations()
         {
             var CPU = configuration.CPU;
 
-            if (configuration.Motherboard != null)
+            if (configuration.Motherboard == null)
             {
-
+                possibleConfigurations = inventory
+                    .Motherboards
+                    .Where(m => m.Socket == CPU.Socket)
+                    .Select(motherboard => new Configuration()
+                    {
+                        CPU = CPU,
+                        Motherboard = motherboard,
+                    })
+                    .ToHashSet();
             }
-
-            var compatibleMotherboards = inventory
-                .Motherboards
-                .Where(m => m.Socket == CPU.Socket)
-                .ToHashSet();
-
-            if (!compatibleMotherboards.Contains(configuration.Motherboard))
+            else
             {
-                return false;
+                var currentConfiguration = new Configuration()
+                {
+                    CPU = configuration.CPU,
+                    Motherboard = configuration.Motherboard,
+                };
+
+                possibleConfigurations.Add(configuration);
             }
 
             var compatibleMemoryCollection = inventory
@@ -154,12 +171,13 @@
                 .Where(m => m.Type == CPU.SupportedMemory)
                 .ToHashSet();
 
-            if (!compatibleMemoryCollection.Contains(configuration.Memory))
+            foreach (var currentConfiguration in possibleConfigurations)
             {
-                return false;
+                foreach (var memory in compatibleMemoryCollection)
+                {
+                    currentConfiguration.Memory = memory;
+                }
             }
-
-            return true;
         }
 
         private bool IsComponentsCompatible(Configuration configuration)

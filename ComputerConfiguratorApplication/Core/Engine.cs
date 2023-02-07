@@ -13,11 +13,11 @@
     {
         private IWriter writer;
         private IReader reader;
-        private Inventory inventory;
+        private DataRepository inventory;
         private Configuration configuration;
         private HashSet<Configuration> possibleConfigurations;
 
-        public Engine(Inventory repository)
+        public Engine(DataRepository repository)
         {
             writer = new Writer();
             reader = new Reader();
@@ -28,14 +28,13 @@
 
         public void Run()
         {
-            PrintInventoryComponents();
-
-            writer.WriteLine($"Please enter part number(s):");
-
             var index = 1;
 
             while (true)
             {
+                PrintInventoryComponents();
+                writer.WriteLine($"Please enter part number:");
+
                 var partNumber = string.Empty;
 
                 if (index == 1)
@@ -48,35 +47,19 @@
                     if (CPU != null)
                     {
                         configuration.CPU = CPU;
-                        writer.WriteLine($"Successfully selected {CPU.ComponentType} with part number {CPU.PartNumber}");
+                        writer.WriteLine(CPU.ComponentSelectedMessage());
                     }
                     else
                     {
                         writer.WriteLine("ERROR: Invalid part number.");
+                        writer.WriteLine("");
                         continue;
                     }
                 }
                 else if (index == 2)
                 {
-                    writer.WriteLine($"Motherboard part number:");
-                    partNumber = reader.ReadLine();
-
-                    var motherboard = inventory.Motherboards.FirstOrDefault(c => c.PartNumber == partNumber);
-
-                    if (motherboard != null)
-                    {
-                        configuration.Motherboard = motherboard;
-                        writer.WriteLine($"Successfully selected {motherboard.ComponentType} with part number {motherboard.PartNumber}");
-                    }
-                    else
-                    {
-                        writer.WriteLine("ERROR: Invalid part number.");
-                        continue;
-                    }
-                }
-                else if (index == 3)
-                {
                     writer.WriteLine($"Memory part number:");
+
                     partNumber = reader.ReadLine();
 
                     var memory = inventory.Memory.FirstOrDefault(c => c.PartNumber == partNumber);
@@ -84,11 +67,32 @@
                     if (memory != null)
                     {
                         configuration.Memory = memory;
-                        writer.WriteLine($"Successfully selected {memory.ComponentType} with part number {memory.PartNumber}");
+                        writer.WriteLine(memory.ComponentSelectedMessage());
                     }
                     else
                     {
                         writer.WriteLine("ERROR: Invalid part number.");
+                        writer.WriteLine("");
+                        continue;
+                    }
+                }
+                else if (index == 3)
+                {
+                    writer.WriteLine($"Motherboard part number:");
+
+                    partNumber = reader.ReadLine();
+
+                    var motherboard = inventory.Motherboards.FirstOrDefault(c => c.PartNumber == partNumber);
+
+                    if (motherboard != null)
+                    {
+                        configuration.Motherboard = motherboard;
+                        writer.WriteLine(motherboard.ComponentSelectedMessage());
+                    }
+                    else
+                    {
+                        writer.WriteLine("ERROR: Invalid part number.");
+                        writer.WriteLine("");
                         continue;
                     }
                 }
@@ -99,7 +103,6 @@
 
                 if (action == "2")
                 {
-                    //todo
                     break;
                 }
                 else if (action == "0")
@@ -111,6 +114,7 @@
 
                 index++;
 
+                //If index == 4 that mean user is selected all components of configuration.
                 if (index == 4)
                 {
                     break;
@@ -143,15 +147,15 @@
         {
             var CPU = configuration.CPU;
 
-            if (configuration.Motherboard == null)
+            if (configuration.Memory == null)
             {
                 possibleConfigurations = inventory
-                    .Motherboards
-                    .Where(m => m.Socket == CPU.Socket)
-                    .Select(motherboard => new Configuration()
+                    .Memory
+                    .Where(m => m.Type == CPU.SupportedMemory)
+                    .Select(memory => new Configuration()
                     {
                         CPU = CPU,
-                        Motherboard = motherboard,
+                        Memory = memory,
                     })
                     .ToHashSet();
             }
@@ -160,22 +164,22 @@
                 var currentConfiguration = new Configuration()
                 {
                     CPU = configuration.CPU,
-                    Motherboard = configuration.Motherboard,
+                    Memory = configuration.Memory,
                 };
 
                 possibleConfigurations.Add(configuration);
             }
 
-            var compatibleMemoryCollection = inventory
-                .Memory
-                .Where(m => m.Type == CPU.SupportedMemory)
+            var compatibleMotherboardsCollection = inventory
+                .Motherboards
+                .Where(m => m.Socket == CPU.Socket)
                 .ToHashSet();
 
             foreach (var currentConfiguration in possibleConfigurations)
             {
-                foreach (var memory in compatibleMemoryCollection)
+                foreach (var motherboard in compatibleMotherboardsCollection)
                 {
-                    currentConfiguration.Memory = memory;
+                    currentConfiguration.Motherboard = motherboard;
                 }
             }
         }
@@ -209,12 +213,13 @@
 
         private string ActionOptionsMenu()
         {
+            writer.WriteLine("");
             writer.WriteLine("Please select action to continue:");
             writer.WriteLine("");
 
-            writer.WriteLine("1 - Continue");
-            writer.WriteLine("2 - Show all possible configurations");
-            writer.WriteLine("0 - Go back to the begining");
+            writer.WriteLine("[1] - Continue");
+            writer.WriteLine("[2] - Show all possible configurations");
+            writer.WriteLine("[0] - Reset configuration");
 
             return reader.ReadLine();
         }
@@ -226,12 +231,12 @@
             VisualizeComponents(inventory.CPUs);
 
             writer.WriteLine("");
-            writer.WriteLine("Motherboards:");
-            VisualizeComponents(inventory.Motherboards);
-
-            writer.WriteLine("");
             writer.WriteLine("Memory:");
             VisualizeComponents(inventory.Memory);
+
+            writer.WriteLine("");
+            writer.WriteLine("Motherboards:");
+            VisualizeComponents(inventory.Motherboards);
 
             writer.WriteLine("");
         }

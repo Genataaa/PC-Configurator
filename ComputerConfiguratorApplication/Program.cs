@@ -4,7 +4,7 @@ using System.Text.Json;
 
 string filePath = @"..\..\..\Data\pc-store-inventory.json";
 
-var inventory = JsonSerializer.Deserialize<Inventory>
+var inventory = JsonSerializer.Deserialize<DataRepository>
             (File.ReadAllText(filePath));
 
 var engine = new Engine(inventory);

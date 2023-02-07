@@ -2,7 +2,7 @@
 
 namespace ComputerConfiguratorApplication.Data.Models
 {
-    public class Inventory
+    public class DataRepository
     {
         public HashSet<CPU> CPUs { get; set; } = new HashSet<CPU>();
 

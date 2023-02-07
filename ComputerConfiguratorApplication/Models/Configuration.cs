@@ -20,9 +20,19 @@
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"{CPU.ComponentType} - {CPU.Name} - {CPU.Socket} - {CPU.SupportedMemory}");
-            sb.AppendLine($"{Motherboard.ComponentType} - {Motherboard.Name} - {Motherboard.Socket}");
-            sb.AppendLine($"{Memory.ComponentType} - {Memory.Name} - {Memory.Type}");
+            if (CPU != null)
+            {
+                sb.AppendLine($"{CPU.ComponentType} - {CPU.Name} - {CPU.Socket} - {CPU.SupportedMemory}");
+            }
+            else if (Memory != null)
+            {
+                sb.AppendLine($"{Motherboard.ComponentType} - {Motherboard.Name} - {Motherboard.Socket}");
+            }
+            else if (Motherboard != null)
+            {
+                sb.AppendLine($"{Memory.ComponentType} - {Memory.Name} - {Memory.Type}");
+            }
+            
             sb.AppendLine($"Price: {TotalPrice}");
 
             return sb.ToString();

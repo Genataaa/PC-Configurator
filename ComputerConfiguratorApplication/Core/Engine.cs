@@ -28,8 +28,38 @@
 
         public void Run()
         {
-            var index = 1;
+            
+            var index = MainMenu();
 
+            var isConfigurationValid = IsComponentsCompatible(configuration);
+
+            if (!isConfigurationValid)
+            {
+                MainMenu();
+            }
+
+            if (index == 4)
+            {
+                writer.WriteLine($"Configuration:\n{configuration}");
+            }
+            else
+            {
+                FindAllPossibleConfigurations();
+
+                writer.WriteLine($"There are {possibleConfigurations.Count} possible combinations:");
+                writer.WriteLine("");
+
+                for (int i = 1; i <= possibleConfigurations.Count; i++)
+                {
+                    writer.WriteLine($"{i}");
+                    writer.WriteLine(configuration.ToString());
+                }
+            }
+        }
+
+        private int MainMenu()
+        {
+            var index = 1;
             while (true)
             {
                 PrintInventoryComponents();
@@ -103,7 +133,7 @@
 
                 if (action == "2")
                 {
-                    break;
+                    return index;
                 }
                 else if (action == "0")
                 {
@@ -117,28 +147,7 @@
                 //If index == 4 that mean user is selected all components of configuration.
                 if (index == 4)
                 {
-                    break;
-                }
-            }
-
-            var isConfigurationValid = IsComponentsCompatible(configuration);
-
-            if (index == 4)
-            {
-
-                writer.WriteLine($"Total: {configuration.TotalPrice}");
-            }
-            else
-            {
-                FindAllPossibleConfigurations();
-
-                writer.WriteLine($"There are {possibleConfigurations.Count} possible combinations:");
-                writer.WriteLine("");
-
-                for (int i = 1; i <= possibleConfigurations.Count; i++)
-                {
-                    writer.WriteLine($"{i}");
-                    writer.WriteLine(configuration.ToString());
+                    return index;
                 }
             }
         }
@@ -195,6 +204,7 @@
 
             if (!compatibleMotherboards.Contains(configuration.Motherboard))
             {
+                writer.WriteLine($"1.Motherboard of type {configuration.Motherboard.Socket} is not compatible with the CPU");
                 return false;
             }
 
@@ -205,6 +215,7 @@
 
             if (!compatibleMemoryCollection.Contains(configuration.Memory))
             {
+                writer.WriteLine($"1.Memory of type {configuration.Memory.Type} is not compatible with the CPU");
                 return false;
             }
 

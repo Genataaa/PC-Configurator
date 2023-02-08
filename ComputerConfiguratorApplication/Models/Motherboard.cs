@@ -1,5 +1,8 @@
 ﻿namespace ComputerConfiguratorApplication.Models
 {
+    /// <summary>
+    /// This class represents Motherboard component
+    /// </summary>
     public class Motherboard : Component
     {
         public string Socket { get; set; }

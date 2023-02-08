@@ -1,5 +1,8 @@
 ﻿namespace ComputerConfiguratorApplication.Models
 {
+    /// <summary>
+    /// This class represents CPU component
+    /// </summary>
     public class CPU : Component
     {
         public string Socket { get; set; }

@@ -9,6 +9,9 @@
     using ComputerConfiguratorApplication.Models;
     using System.Linq;
 
+    /// <summary>
+    ///Engine class
+    /// </summary>
     public class Engine : IEngine
     {
         private IWriter writer;
@@ -26,9 +29,11 @@
             possibleConfigurations = new HashSet<Configuration>();
         }
 
+        /// <summary>
+        /// This method starts program
+        /// </summary>
         public void Run()
         {
-            
             var index = MainMenu();
 
             var isConfigurationValid = IsComponentsCompatible(configuration);
@@ -49,14 +54,19 @@
                 writer.WriteLine($"There are {possibleConfigurations.Count} possible combinations:");
                 writer.WriteLine("");
 
-                for (int i = 1; i <= possibleConfigurations.Count; i++)
+                var i = 1;
+                foreach (var currentConfiguration in possibleConfigurations)
                 {
-                    writer.WriteLine($"{i}");
-                    writer.WriteLine(configuration.ToString());
+                    writer.WriteLine($"{i++}");
+                    writer.WriteLine(currentConfiguration.ToString());
                 }
             }
         }
 
+        /// <summary>
+        /// This method prints main menu opptions in the console.
+        /// </summary>
+        /// <returns></returns>
         private int MainMenu()
         {
             var index = 1;
@@ -152,13 +162,18 @@
             }
         }
 
+        /// <summary>
+        /// This method search for all possible configurations, that contains components coosed by user.
+        /// </summary>
         private void FindAllPossibleConfigurations()
         {
+            var currentConfigurations = new List<Configuration>();
+
             var CPU = configuration.CPU;
 
             if (configuration.Memory == null)
             {
-                possibleConfigurations = inventory
+                currentConfigurations = inventory
                     .Memory
                     .Where(m => m.Type == CPU.SupportedMemory)
                     .Select(memory => new Configuration()
@@ -166,7 +181,7 @@
                         CPU = CPU,
                         Memory = memory,
                     })
-                    .ToHashSet();
+                    .ToList();
             }
             else
             {
@@ -176,7 +191,7 @@
                     Memory = configuration.Memory,
                 };
 
-                possibleConfigurations.Add(configuration);
+                currentConfigurations.Add(configuration);
             }
 
             var compatibleMotherboardsCollection = inventory
@@ -184,44 +199,60 @@
                 .Where(m => m.Socket == CPU.Socket)
                 .ToHashSet();
 
-            foreach (var currentConfiguration in possibleConfigurations)
+            foreach (var currentConfiguration in currentConfigurations)
             {
                 foreach (var motherboard in compatibleMotherboardsCollection)
                 {
-                    currentConfiguration.Motherboard = motherboard;
+                    var configuration = new Configuration()
+                    {
+                        CPU = currentConfiguration.CPU,
+                        Memory = currentConfiguration.Memory,
+                        Motherboard = motherboard,
+                    };
+
+                    possibleConfigurations.Add(configuration);
                 }
             }
         }
 
+        /// <summary>
+        /// This methood checks if components choosed by user are compatible.
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         private bool IsComponentsCompatible(Configuration configuration)
         {
             var CPU = configuration.CPU;
-
-            var compatibleMotherboards = inventory
-                .Motherboards
-                .Where(m => m.Socket == CPU.Socket)
-                .ToHashSet();
-
-            if (!compatibleMotherboards.Contains(configuration.Motherboard))
-            {
-                writer.WriteLine($"1.Motherboard of type {configuration.Motherboard.Socket} is not compatible with the CPU");
-                return false;
-            }
 
             var compatibleMemoryCollection = inventory
                 .Memory
                 .Where(m => m.Type == CPU.SupportedMemory)
                 .ToHashSet();
 
-            if (!compatibleMemoryCollection.Contains(configuration.Memory))
+            if (configuration.Memory != null && !compatibleMemoryCollection.Contains(configuration.Memory))
             {
-                writer.WriteLine($"1.Memory of type {configuration.Memory.Type} is not compatible with the CPU");
+                writer.WriteLine($"Memory of type {configuration.Memory.Type} is not compatible with the CPU");
+                return false;
+            }
+
+            var compatibleMotherboards = inventory
+                .Motherboards
+                .Where(m => m.Socket == CPU.Socket)
+                .ToHashSet();
+
+            if (configuration.Motherboard != null && !compatibleMotherboards.Contains(configuration.Motherboard))
+            {
+                writer.WriteLine($"Motherboard of type {configuration.Motherboard.Socket} is not compatible with the CPU");
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>
+        /// This method prints actions menu in the console.
+        /// </summary>
+        /// <returns></returns>
         private string ActionOptionsMenu()
         {
             writer.WriteLine("");
@@ -235,8 +266,12 @@
             return reader.ReadLine();
         }
 
+        /// <summary>
+        /// This method prints all components in the inventory.
+        /// </summary>
         private void PrintInventoryComponents()
         {
+            writer.WriteLine("All available Components:");
             writer.WriteLine("");
             writer.WriteLine("CPUs:");
             VisualizeComponents(inventory.CPUs);
@@ -252,6 +287,10 @@
             writer.WriteLine("");
         }
 
+        /// <summary>
+        /// This method prints current configuration, choosed by user.
+        /// </summary>
+        /// <param name="configuration"></param>
         private void PrintCurrentConfiguration(Configuration configuration)
         {
             writer.WriteLine("Current Configuration:");
@@ -275,6 +314,9 @@
             }
         }
 
+        /// <summary>
+        /// This method clear current configuration, choosed by user, and clear possibleConfigurations collection.
+        /// </summary>
         private void ClearConfiguration()
         {
             configuration.CPU = null;
@@ -282,6 +324,11 @@
             configuration.Memory = null;
         }
 
+        /// <summary>
+        /// This method prints all components from collection that receive.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentsList"></param>
         private void VisualizeComponents<T>(IEnumerable<T> componentsList)
         {
             foreach (T component in componentsList)

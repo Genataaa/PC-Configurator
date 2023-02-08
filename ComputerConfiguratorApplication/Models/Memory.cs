@@ -2,6 +2,9 @@
 {
     using System;
 
+    /// <summary>
+    /// This class represents Memory component
+    /// </summary>
     public class Memory : Component
     {
         public string Type { get; set; }

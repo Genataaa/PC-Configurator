@@ -2,6 +2,9 @@
 {
     using System.Text;
 
+    /// <summary>
+    /// This class represents component configuration
+    /// </summary>
     public class Configuration
     {
         public CPU CPU { get; set; }
@@ -24,11 +27,13 @@
             {
                 sb.AppendLine($"{CPU.ComponentType} - {CPU.Name} - {CPU.Socket} - {CPU.SupportedMemory}");
             }
-            else if (Memory != null)
+
+            if (Memory != null)
             {
                 sb.AppendLine($"{Motherboard.ComponentType} - {Motherboard.Name} - {Motherboard.Socket}");
             }
-            else if (Motherboard != null)
+
+            if (Motherboard != null)
             {
                 sb.AppendLine($"{Memory.ComponentType} - {Memory.Name} - {Memory.Type}");
             }

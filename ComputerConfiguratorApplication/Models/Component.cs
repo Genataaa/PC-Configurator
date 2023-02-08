@@ -1,5 +1,8 @@
 ﻿namespace ComputerConfiguratorApplication.Models
 {
+    /// <summary>
+    /// This is abstract class that represents base component entity.
+    /// </summary>
     public abstract class Component
     {
         public string ComponentType { get; set; }
